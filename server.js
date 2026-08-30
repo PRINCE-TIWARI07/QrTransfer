@@ -3,6 +3,15 @@ import express from 'express';
 import { WebSocketServer } from 'ws';
 
 const app = express();
+// The production UI is often hosted on Vercel while this WebSocket service is
+// hosted elsewhere. Session IDs are opaque and short-lived; allow that UI to
+// call the session endpoint across origins.
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_ORIGIN || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 app.use(express.static('public'));
 
